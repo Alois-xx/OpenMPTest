@@ -175,12 +175,69 @@ std::wstring GetFileVersion(std::wstring& pszFilePath)
 
 void Help(std::wstring &exeFile)
 {
-    wprintf(L"OpenMPTest -pause or dd [-small] v%s\n", GetFileVersion(exeFile).c_str());
-    wprintf(L" The first mode measures the latency of the pause instruction. The second mode measures Intel OpenMP performance.\n");
-    wprintf(L"  -pause     Measure latency of pause instruction on up to 64 cores.\n");
+    wprintf(L"OpenMPTest [-event] [-pause] or dd [-small] v%s\n", GetFileVersion(exeFile).c_str());
+    wprintf(L"  -event     Measure Context Switch latency\n");
+    wprintf(L"             Normal ranges are from 0.6s (no C - State) - 16s (C6 or higher) depending on OS and BIOS configured Sleep C-states.\n");
+    wprintf(L"  -pause     Measure latency of pause instruction on up to 64 cores. P and E Cores have different latencies.\n");
     wprintf(L"  dd         The first argument is the value which is set for KMP_BLOCKTIME of Intel OpenMP Library. E.g. 100us.\n");
     wprintf(L"             This will test the performance of a tight OpenMP loop which creates many small tasks in a loop which need a lot of scheduling.\n");
     wprintf(L"   [-small]  When -small is used an empty loop is called on all cores 5 times with a second delay in between to show the effect of OpenMP CPU spinning.\n");
+    wprintf(L"Examples\n");
+    wprintf(L" Measure context switch latency\n");
+    wprintf(L"  OpenMPTest -event\n");
+    wprintf(L" Measure pause latency\n");
+    wprintf(L"  OpenMPTest -pause\n");
+    wprintf(L" Run OpenMP workload with KMP_BLOCKTIME=0\n");
+    wprintf(L"  OpenMPTest 0\n");
+    wprintf(L" Run OpenMP workload with KMP_BLOCKTIME=1\n");
+    wprintf(L"  OpenMPTest 1\n");
+    wprintf(L" Run light OpenMP workload with KMP_BLOCKTIME=200\n");
+    wprintf(L"  OpenMPTest 200 -light\n");
+
+}
+
+HANDLE ev1;
+HANDLE ev2;
+
+const int NEvents = 100 * 1000;
+
+void Thread1()
+{
+    for (int i = 0; i < NEvents; i++)
+    {
+        ::WaitForSingleObject(ev1, INFINITE);
+        ::ResetEvent(ev1);
+        SetEvent(ev2);
+    }
+}
+
+void Thread2()
+{
+    for (int i = 0; i < NEvents; i++)
+    {
+        ::WaitForSingleObject(ev2, INFINITE);
+        ::ResetEvent(ev2);
+        SetEvent(ev1);
+    }
+}
+
+void EventTest()
+{
+    Stopwatch sw;
+
+    ev1 = ::CreateEvent(nullptr, TRUE, TRUE, nullptr);
+    ev2 = ::CreateEvent(nullptr, TRUE, TRUE, nullptr);
+
+
+    std::thread thread_1 = std::thread(Thread1);
+    std::thread thread_2 = std::thread(Thread2);
+
+
+    thread_2.join();
+    thread_1.join();
+
+    auto ms = sw.Stop();
+    printf("Event Test of %d signals on two threads. Elapsed time: %.1f s\n", NEvents, ms.count() / 1000.0);
 }
 
 int wmain(int argc, wchar_t** argv)
@@ -199,6 +256,11 @@ int wmain(int argc, wchar_t** argv)
         if (firstArg == L"-pause")
         {
             MeasurePauseLatency();
+            return 0;
+        }
+        else if (firstArg == L"-event")
+        {
+            EventTest();
             return 0;
         }
 
