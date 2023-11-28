@@ -84,7 +84,7 @@ OpenMP loop with 500000 outer and 10000 parallel inner loop. Elapsed time: 1.3 s
 The CPU pause instruction is defined as a number of cycles which a processor is put to sleep. This value has changed
 between CPU generations. 
 
-Pause latency from https://uops.info/table.htm in cycles:
+Pause latency from https://uops.info/table.html in cycles:
 
 | Haswell  | Broadwell | Skylake-X | Kaby Lake | Coffee Lake | Cannon Lake | Cascade Lake | Ice Lake | Tiger Lake | Rocket Lake | Alder Lake-P | AMD Zen2 | AMD Zen4 |
 | ---------|---------  |---------  |---------  |---------    |---------    |---------     |--------- |---------   |---------    |---------     |--------- |--------- |
