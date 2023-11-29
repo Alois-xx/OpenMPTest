@@ -196,9 +196,7 @@ void Help(std::wstring &exeFile)
 
 }
 
-HANDLE ev1;
-HANDLE ev2;
-
+HANDLE ev1, ev2;
 const int NEvents = 100 * 1000;
 
 void Thread1()
@@ -207,7 +205,7 @@ void Thread1()
     {
         ::WaitForSingleObject(ev1, INFINITE);
         ::ResetEvent(ev1);
-        SetEvent(ev2);
+        ::SetEvent(ev2);
     }
 }
 
@@ -217,7 +215,7 @@ void Thread2()
     {
         ::WaitForSingleObject(ev2, INFINITE);
         ::ResetEvent(ev2);
-        SetEvent(ev1);
+        ::SetEvent(ev1);
     }
 }
 
@@ -228,13 +226,11 @@ void EventTest()
     ev1 = ::CreateEvent(nullptr, TRUE, TRUE, nullptr);
     ev2 = ::CreateEvent(nullptr, TRUE, TRUE, nullptr);
 
-
     std::thread thread_1 = std::thread(Thread1);
     std::thread thread_2 = std::thread(Thread2);
 
-
-    thread_2.join();
     thread_1.join();
+    thread_2.join();
 
     auto ms = sw.Stop();
     printf("Event Test of %d signals on two threads. Elapsed time: %.1f s\n", NEvents, ms.count() / 1000.0);
