@@ -107,7 +107,7 @@ void MeasureOpenMPPerformance()
 
     for (int k = 0; k < OuterLoopCount; k++)
     {
-#pragma omp parallel for 
+#pragma omp parallel for schedule(dynamic)
         for (int i = 1; i < N; i++)
         {
             pValues[i] = 10.0 * pValues[i]; // simulate some parallel work
@@ -191,8 +191,8 @@ void Help(std::wstring &exeFile)
     wprintf(L"  OpenMPTest 0\n");
     wprintf(L" Run OpenMP workload with KMP_BLOCKTIME=1\n");
     wprintf(L"  OpenMPTest 1\n");
-    wprintf(L" Run light OpenMP workload with KMP_BLOCKTIME=200\n");
-    wprintf(L"  OpenMPTest 200 -light\n");
+    wprintf(L" Run small OpenMP workload with KMP_BLOCKTIME=200\n");
+    wprintf(L"  OpenMPTest 200 -small\n");
 
 }
 
