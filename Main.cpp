@@ -107,7 +107,7 @@ void MeasureOpenMPPerformance()
 
     for (int k = 0; k < OuterLoopCount; k++)
     {
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(static)
         for (int i = 1; i < N; i++)
         {
             pValues[i] = 10.0 * pValues[i]; // simulate some parallel work
