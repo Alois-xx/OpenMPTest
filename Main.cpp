@@ -201,6 +201,14 @@ const int NEvents = 100 * 1000;
 
 void Thread1()
 {
+    DWORD_PTR mask = static_cast<DWORD_PTR>(1) << 1;
+    auto afflret = ::SetThreadAffinityMask(::GetCurrentThread(), mask);
+    if (afflret == 0)
+    {
+        wprintf(L"\nSetThreadAffinityMask did fail with %d", ::GetLastError());
+        return;
+    }
+
     for (int i = 0; i < NEvents; i++)
     {
         ::WaitForSingleObject(ev1, INFINITE);
@@ -211,6 +219,14 @@ void Thread1()
 
 void Thread2()
 {
+    DWORD_PTR mask = static_cast<DWORD_PTR>(1) << 2;
+    auto afflret = ::SetThreadAffinityMask(::GetCurrentThread(), mask);
+    if (afflret == 0)
+    {
+        wprintf(L"\nSetThreadAffinityMask did fail with %d", ::GetLastError());
+        return;
+    }
+
     for (int i = 0; i < NEvents; i++)
     {
         ::WaitForSingleObject(ev2, INFINITE);
