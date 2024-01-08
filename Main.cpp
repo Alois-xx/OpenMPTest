@@ -92,7 +92,7 @@ void MeasurePauseLatency()
     }
 }
 
-void MeasureOpenMPPerformance()
+void MeasureOpenMPPerformance(int outerLoopCount)
 {
     const int N = 10000;
     double* pValues = new double[N];
@@ -103,7 +103,7 @@ void MeasureOpenMPPerformance()
 
     Stopwatch swParallel;
 
-    const int OuterLoopCount = 500 * 1000;
+    int OuterLoopCount = outerLoopCount == 0 ? 500 * 1000 : outerLoopCount;
 
     for (int k = 0; k < OuterLoopCount; k++)
     {
@@ -175,7 +175,7 @@ std::wstring GetFileVersion(std::wstring& pszFilePath)
 
 void Help(std::wstring &exeFile)
 {
-    wprintf(L"OpenMPTest [-event] [-pause] or dd [-small] v%s\n", GetFileVersion(exeFile).c_str());
+    wprintf(L"OpenMPTest [-event [n]] [-pause] or dd [n] [-small] v%s\n", GetFileVersion(exeFile).c_str());
     wprintf(L"  -event     Measure Context Switch latency\n");
     wprintf(L"             Normal ranges are from 0.6s (no C - State) - 16s (C6 or higher) depending on OS and BIOS configured Sleep C-states.\n");
     wprintf(L"  -pause     Measure latency of pause instruction on up to 64 cores. P and E Cores have different latencies.\n");
@@ -197,7 +197,7 @@ void Help(std::wstring &exeFile)
 }
 
 HANDLE ev1, ev2;
-const int NEvents = 100 * 1000;
+int NEvents = 100 * 1000;
 
 void Thread1()
 {
@@ -235,8 +235,10 @@ void Thread2()
     }
 }
 
-void EventTest()
+void EventTest(int nEvents)
 {
+    NEvents = nEvents == 0 ? NEvents : nEvents;
+
     Stopwatch sw;
 
     ev1 = ::CreateEvent(nullptr, TRUE, TRUE, nullptr);
@@ -261,6 +263,8 @@ int wmain(int argc, wchar_t** argv)
         return 0;
     }
 
+    int n = 0;
+
     if (argc > 1)
     {
         std::wstring firstArg = argv[1];
@@ -272,7 +276,11 @@ int wmain(int argc, wchar_t** argv)
         }
         else if (firstArg == L"-event")
         {
-            EventTest();
+            if (argc > 2)
+            {
+                n = _wtoi(argv[2]);
+            }
+            EventTest(n);
             return 0;
         }
 
@@ -281,22 +289,25 @@ int wmain(int argc, wchar_t** argv)
 
         if (argc > 2)
         {
-            
             std::wstring str = argv[2];
+            n = _wtoi(argv[2]);
             if (str == L"-small")
             {
                 MeasureSmallWork();
+            }
+            else if (n > 0)
+            {
+                MeasureOpenMPPerformance(n);
             }
             else
             {
                 Help(exeName);
                 return 0;
             }
-
         }
         else
         {
-            MeasureOpenMPPerformance();
+            MeasureOpenMPPerformance(n);
         }
     }
     else
