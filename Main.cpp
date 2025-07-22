@@ -206,7 +206,6 @@ void Thread1()
     if (afflret == 0)
     {
         wprintf(L"\nSetThreadAffinityMask did fail with %d", ::GetLastError());
-        return;
     }
 
     for (int i = 0; i < NEvents; i++)
@@ -224,7 +223,6 @@ void Thread2()
     if (afflret == 0)
     {
         wprintf(L"\nSetThreadAffinityMask did fail with %d", ::GetLastError());
-        return;
     }
 
     for (int i = 0; i < NEvents; i++)
